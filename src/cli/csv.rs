@@ -1,41 +1,8 @@
-use core::fmt;
-use std::str::FromStr;
+use std::{fmt, str::FromStr};
 
 use clap::Parser;
 
-#[derive(Debug, Parser)]
-#[clap(name = "rcli", version, author)]
-pub struct Opts {
-    #[command(subcommand)]
-    pub cmd: SubCommand,
-}
-
-#[derive(Debug, Parser)]
-pub enum SubCommand {
-    #[command(name = "csv", about = "Convert CSV to JSON")]
-    Csv(CsvOpts),
-
-    #[command(name = "genpass", about = "Generate a random password")]
-    GenPass(GenPassOpts),
-}
-
-#[derive(Debug, Parser)]
-pub struct GenPassOpts {
-    #[arg(short, long, default_value_t = 8)]
-    pub length: u8,
-
-    #[arg(long, default_value_t = true)]
-    pub uppercase: bool,
-
-    #[arg(long, default_value_t = true)]
-    pub lowercase: bool,
-
-    #[arg(long, default_value_t = true)]
-    pub number: bool,
-
-    #[arg(long, default_value_t = true)]
-    pub symbol: bool,
-}
+use super::verify_input_file;
 
 #[derive(Debug, Parser)]
 pub struct CsvOpts {
@@ -85,13 +52,5 @@ impl From<OutputFormat> for &'static str {
 impl fmt::Display for OutputFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", Into::<&str>::into(*self))
-    }
-}
-
-fn verify_input_file(file_name: &str) -> Result<String, &'static str> {
-    if std::path::Path::new(file_name).exists() {
-        Ok(file_name.into())
-    } else {
-        Err("file not exist")
     }
 }
