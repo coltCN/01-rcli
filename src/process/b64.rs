@@ -1,10 +1,8 @@
-use std::{fs::File, io::Read};
-
 use base64::prelude::{Engine as _, BASE64_STANDARD, BASE64_URL_SAFE};
 
-use crate::cli::Base64Format;
+use crate::{cli::Base64Format, get_reader};
 
-pub fn process_encode(input: &str, format: Base64Format) -> anyhow::Result<()> {
+pub fn process_encode(input: &str, format: Base64Format) -> anyhow::Result<String> {
     let mut reader = get_reader(input)?;
     let mut buf = Vec::new();
     reader.read_to_end(&mut buf)?;
@@ -14,11 +12,10 @@ pub fn process_encode(input: &str, format: Base64Format) -> anyhow::Result<()> {
         Base64Format::UrlSafe => BASE64_URL_SAFE.encode(&buf),
     };
 
-    println!("{}", encode);
-    Ok(())
+    Ok(encode)
 }
 
-pub fn process_decode(input: &str, format: Base64Format) -> anyhow::Result<()> {
+pub fn process_decode(input: &str, format: Base64Format) -> anyhow::Result<Vec<u8>> {
     let mut reader = get_reader(input)?;
     let mut buf = String::new();
     reader.read_to_string(&mut buf)?;
@@ -30,20 +27,7 @@ pub fn process_decode(input: &str, format: Base64Format) -> anyhow::Result<()> {
         Base64Format::UrlSafe => BASE64_URL_SAFE.decode(buf)?,
     };
 
-    // TODO: decode 结果 不一定是String，但是这里 假设是
-    let decoded = String::from_utf8(decoded)?;
-
-    println!("{}", decoded);
-    Ok(())
-}
-
-fn get_reader(input: &str) -> anyhow::Result<Box<dyn Read>> {
-    let reader: Box<dyn Read> = if input == "-" {
-        Box::new(std::io::stdin())
-    } else {
-        Box::new(File::open(input)?)
-    };
-    Ok(reader)
+    Ok(decoded)
 }
 
 #[cfg(test)]
