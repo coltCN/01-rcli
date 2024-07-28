@@ -1,12 +1,16 @@
 mod base64;
 mod csv;
 mod genpass;
+mod http;
 mod text;
+
+use std::path::{Path, PathBuf};
 
 use self::csv::CsvOpts;
 pub use self::{
     base64::{Base64Format, Base64SubCommand},
     csv::OutputFormat,
+    http::HttpSubCommand,
     text::{TextSignFormat, TextSubCommand},
 };
 use clap::Parser;
@@ -32,13 +36,24 @@ pub enum SubCommand {
 
     #[command(subcommand)]
     Text(TextSubCommand),
+    #[command(subcommand)]
+    Http(HttpSubCommand),
 }
 fn verify_file(file_name: &str) -> Result<String, &'static str> {
     // 判断 file_name 是 "-" 或者 文件是否存在
-    if file_name == "-" || std::path::Path::new(file_name).exists() {
+    if file_name == "-" || Path::new(file_name).exists() {
         Ok(file_name.into())
     } else {
         Err("File does not exist")
+    }
+}
+
+fn verify_path(path: &str) -> Result<PathBuf, &'static str> {
+    let p = Path::new(path);
+    if p.exists() && p.is_dir() {
+        Ok(path.into())
+    } else {
+        Err("Path does not exist or is not a directory")
     }
 }
 
